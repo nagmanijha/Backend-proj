@@ -24,4 +24,12 @@ app.use(express.static("public")) // to store
 app.use(cookieParser()) //let server set cookie
 
 
+//routes
+
+import userRouter from './routes/user.routes.js'
+
+//routes declaration
+app.use("/api/v1/users", userRouter) // /users/   (it becomes prefix)
+
+
 export {app}
