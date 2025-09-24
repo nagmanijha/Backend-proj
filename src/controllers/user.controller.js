@@ -15,22 +15,41 @@ const registerUser = asyncHandler(async (req, res, next) => {
    // check for user creation
    // return response
    
+// console.log('headers:', req.headers);
+// console.log('content-type:', req.headers['content-type']);
+// console.log('req.body:', req.body);
+// console.log('req.files:', req.files);
+// console.log('req.file:', req.file);
+
+
+
    const {fullname, email, username, password} = req.body
+   console.log('destructured:', { fullname, email, username, password, types: {
+   fullname: typeof fullname,
+   email: typeof email
+}});
+
    console.log("email: ", email);
+      console.log("Received data:", {fullname, email, username});
+    // console.log(req.body);
 
 //    if(fullname === ""){
 //     throw new ApiError(400, "fullname is required")
 //    } :<--- not good, have to do for all fields
 
-if(
-    [fullname, email, username, password].some(
-        (field) => field?.trim() === ""
-    )
-) {
-    throw new ApiError(400, "All fields are required.")
-}
+// if(
+//     [fullname, email, username, password].some(
+//         (field) => field?.trim() === ""
+//     )
+// ) {
+//     throw new ApiError(400, "All fields are required.")
+// }
 
-  const existedUser=  User.findOne({
+     if ([fullname, email, username, password].some((field) => !field || field.toString().trim() === "")) {
+    throw new ApiError(400, "All fields are required.");
+  }
+
+  const existedUser= await User.findOne({
         $or: [{username}, {email}]
     })
 
@@ -39,20 +58,26 @@ if(
     }
 
     const avatarLocalPath = req.files?.avatar[0]?.path;
-    const coverImageLocalPath = req.files?.coverImage[0]?.path;
+    // const coverImageLocalPath = req.files?.coverImage[0]?.path;
 
     if(!avatarLocalPath){
         throw new ApiError(400, "Avatar File is Required")
     }
+        let coverImageLocalPath;
+    if (req.files && Array.isArray(req.files.coverImage) && req.files.coverImage.length > 0) {
+        coverImageLocalPath = req.files.coverImage[0].path
+    }
 
     const avatar = await uploadOnCloudinary(avatarLocalPath)
-    const coverImage =  await uploadOnCloudinary(coverImageLocalPath)
+        const coverImage = await uploadOnCloudinary(coverImageLocalPath)
+
 
     if(!avatar){
         throw new ApiError(500, "Unable to upload avatar image")
     }
 
     const user = await User.create({
+        fullname,
         avatar: avatar.url,
         coverImage: coverImage?.url || "",
         email,
@@ -69,10 +94,8 @@ if(
    }
 
    return res.status(201).json(
-    {
-       new :ApiResponse(200, createdUser, "User has been created successfully")
-    }
-)
+     new ApiResponse(200, createdUser, "User has been created successfully")
+   )
 
 })
 

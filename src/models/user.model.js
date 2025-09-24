@@ -18,12 +18,14 @@ const userSchema = new Schema({
         trim: true,
         lowercase: true
     },
+
     fullname:{
         type: String,
         required: true,
         trim: true,
         index: true
     },
+
     avatar:{
         type: String,
         required: true
@@ -42,7 +44,7 @@ const userSchema = new Schema({
         required: [true, 'Password is required']
     },
     refreshToken: {
-        type: string,
+        type: String,
     }
 
 },
